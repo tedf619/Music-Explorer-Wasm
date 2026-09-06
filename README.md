@@ -1,4 +1,5 @@
 # Music Explorer Wasm
+### A Blazor Web Assembly application in C# 
 
 <img width="1252" height="860" alt="image" src="https://github.com/user-attachments/assets/15f5a0a5-ccb5-434a-ba47-3ea3fdcd8aae" />
 
