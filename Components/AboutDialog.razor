@@ -1,0 +1,38 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-3" />About MusicExplorerWasm
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Style="white-space: pre-line;">@content</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close_Clicked">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    string content = """
+    This is a Blazor standalone Wasm (WebAssembly) app. It's a C# app that runs inside a browser. The app allows you to find all the albums for a given artist. For each album, it shows the cover art, the songs and the lyrics.
+
+    The following free Web Services are used:
+
+            - MusicBrainz.org for the artist, album and track information.
+            - CoverArtArchive.org for the album cover thumbnail.
+            - LrcLib.com for the song lyrics.
+
+    A prior 2009 Windows Forms version of this app used Amazon Web Services to get the artist and album data. That service required registering with AWS to get a personal key for the web service calls.
+
+    This new app replaces AWS with MusicBrainz, which doesn't requre prior registration. The downside is that MusicBrainz is much slower than the old AWS service. The slowness is due to MusicBrainz throttling, requiring you to wait about one second between successive calls. Since multiple calls are required to obtain album details, the delays add up fast. Enjoy!
+
+
+    Written using .Net 10. Ted Faison - September 2026
+""";
+
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    void Close_Clicked() => MudDialog.Cancel();
+}

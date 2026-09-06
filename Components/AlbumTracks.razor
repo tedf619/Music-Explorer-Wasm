@@ -1,0 +1,15 @@
+﻿<TrackListView Album=@Album OnTrackSelected=TrackListView_TrackSelected></TrackListView>
+
+@code {
+
+    [Parameter]
+    public Album? Album { get; set; }
+
+    [Parameter]
+    public EventCallback<Track> OnTrackSelected { get; set; }
+
+    async void TrackListView_TrackSelected(Track track)
+    {
+        await OnTrackSelected.InvokeAsync(track);
+    }
+}

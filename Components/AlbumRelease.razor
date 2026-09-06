@@ -1,0 +1,24 @@
+﻿<SectionHeader Text="Album Details"></SectionHeader>
+
+<MudPaper Style="display: flex;" Class="pa-2" Elevation="2">
+    <div style="width: 60px; flex-shrink: 0; overflow: auto;">
+        <MudText>Artist:</MudText>
+        <MudText>Title:</MudText>
+        <MudText>Label:</MudText>
+        <MudText>Genre:</MudText>
+        <MudText>Date:</MudText>
+    </div>
+    <div style="width: 340px; flex-shrink: 0; overflow: auto;">
+        <MudText>@Album?.Artist &nbsp</MudText>
+        <MudText>@Album?.Title &nbsp</MudText>
+        <MudText>@Album?.Label &nbsp</MudText>
+        <MudText>@Album?.Genre &nbsp</MudText>
+        <MudText>@Album?.Date.ToString("yyyy-MM-dd") &nbsp</MudText>
+    </div>
+    <MudImage Src="@Album?.CoverArtUri" Alt="Cover Art" Style="border: 1px solid #ccc;" Width="135" Height="135" />
+</MudPaper>
+
+@code {
+    [Parameter]
+    public Album? Album { get; set; }
+}

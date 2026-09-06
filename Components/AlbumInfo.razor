@@ -1,0 +1,38 @@
+﻿<MudStack Style="height: 100%; width: 100%;" Spacing="0">
+
+    <!-- Top area; AlbumRelease -->
+    <MudPaper Elevation="0" Style="flex: 0 0 auto; height: 200px">
+        <AlbumRelease @ref=albumRelease Album=@Album></AlbumRelease>
+    </MudPaper>
+
+    <!-- Middle area: Tracks -->
+    <MudPaper Elevation="0" Style="flex: 0 0 auto; ">
+        <AlbumTracks @ref=albumTracks Album=@Album OnTrackSelected=AlbumTrack_TrackSelected></AlbumTracks>
+    </MudPaper>
+
+    <!-- Bottom area: Lyrics - fills remaining space-->
+    <MudPaper Elevation="0" Style="flex: 1 1 auto; overflow-y: auto">
+        <Lyrics @ref=trackLyrics Track=@Track></Lyrics>
+    </MudPaper>
+
+</MudStack>
+
+@code {
+    AlbumRelease? albumRelease;
+    AlbumTracks? albumTracks;
+    Lyrics? trackLyrics;
+
+    [Parameter]
+    public Album? Album { get; set; }
+
+    [Parameter]
+    public Track? Track { get; set; }
+
+    [Parameter]
+    public EventCallback<Track> OnTrackSelected { get; set; }
+
+    async void AlbumTrack_TrackSelected(Track track)
+    {
+        await OnTrackSelected.InvokeAsync(track);
+    }
+}

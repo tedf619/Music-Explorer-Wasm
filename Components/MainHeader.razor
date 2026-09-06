@@ -1,0 +1,55 @@
+﻿@inject IDialogService DialogService
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="me-2">
+    <MudTextField @bind-Value=@Artist Label="Artist" Variant="Variant.Outlined" Style="height: 40px" OnKeyUp="HandleKeyUp"></MudTextField>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchButton_Clicked">Search</MudButton>
+    <MudCheckBox T="bool" Value=isChecked ValueChanged="HttpLog_Clicked" Label="HTTP Log" />
+    <MudText Style="text-decoration: underline; cursor: pointer;" Class="pa-2" @onclick="About_Clicked">
+        About
+    </MudText>
+
+</MudStack>
+
+@code {
+    bool isChecked;
+
+    [Parameter]
+    public string Artist { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<bool> OnHttpLogClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSearchClicked { get; set; }
+
+    async void SearchButton_Clicked()
+    {
+        await OnSearchClicked.InvokeAsync(Artist);
+    }
+
+    async void HttpLog_Clicked(bool value)
+    {
+        isChecked = !isChecked;
+
+        await OnHttpLogClicked.InvokeAsync(isChecked);
+    }
+
+    async void About_Clicked()
+    {
+         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        var parameters = new DialogParameters<AboutDialog> {};
+        var dialog = await DialogService.ShowAsync<AboutDialog>("About", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        if (Artist == "") return;
+
+        await OnSearchClicked.InvokeAsync(Artist);
+    }
+}
+
+

@@ -1,0 +1,64 @@
+﻿<MudPaper Elevation="2" Style="height: 100%; display: flex; flex-direction: column;">
+    <MudTable Items=@(Album?.Tracks)
+              Height="300px"
+              FixedHeader="true"
+              Dense="true"
+              Hover="true"
+              Striped="true"
+              T="Track"
+              SelectedItem="selectedTrack"
+              SelectedItemChanged="OnSelectedItemChanged"
+              RowClass="cursor-pointer"
+              RowStyleFunc="@RowStyleFunc">
+        <HeaderContent>
+            <MudTh Style="@($"max-width:{column1Width}; background-color:white; box-shadow: inset 1px 1px 0 0 grey, inset -1px -1px 0 0 rgba(0,0,0,0.4);")">@column1Header</MudTh>
+            <MudTh Style="@($"max-width:{column2Width}; background-color:white; box-shadow: inset 1px 1px 0 0 grey, inset -1px -1px 0 0 rgba(0,0,0,0.4);")">@column2Header</MudTh>
+            <MudTh Style="background-color:white; box-shadow: inset 1px 1px 0 0 grey, inset -1px -1px 0 0 rgba(0,0,0,0.4);">@column3Header</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@column1Header" Style="@($"width:{column1Width}; max-width:{column1Width}; padding: 3px 20px;")">
+                @context.Number
+            </MudTd>
+            <MudTd DataLabel="@column2Header" Style="@($"width:{column2Width}; max-width:{column2Width}; padding: 3px 15px;")">
+                @context.Duration.ToString(@"mm\:ss")
+            </MudTd>
+            <MudTd DataLabel="@column3Header" Style="@($"padding: 3px 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;")">
+                @context.Title
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>No items</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public Album? Album { get; set; }
+
+    [Parameter]
+    public EventCallback<Track> OnTrackSelected { get; set; }
+
+    string column1Header = "Track";
+    string column2Header = "Duration";
+    string column3Header = "Title";
+
+    string column1Width = "70px";
+    string column2Width = "90px";
+
+    Track? selectedTrack;
+
+    async Task OnSelectedItemChanged(Track track)
+    {
+        selectedTrack = track;
+        await OnTrackSelected.InvokeAsync(track);
+    }
+
+    string RowStyleFunc(Track item, int index)
+    {
+        if (item == selectedTrack)
+            return "background-color: lightgrey; color: black;";
+        else
+            return string.Empty;
+    }
+}

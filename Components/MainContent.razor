@@ -1,0 +1,151 @@
+﻿@inject MusicBrainz musicBrainz
+@inject CoverArtArchive coverArtArchive
+@inject LrcLib lrcLib
+
+<MudStack Row="true" Class="flex-grow-1" Spacing="1" Style=@StackStyle>
+
+    <!-- Left: AlbumList -->
+    <MudPaper Style="flex: 0 0 300px; background-color:#eeeeee">
+        <AlbumList @ref=albumList OnAlbumClicked=AlbumClicked></AlbumList>
+    </MudPaper>
+
+    <!-- Center: AlbumInfo -->
+    <MudPaper Style="flex: 1 1 auto; overflow: auto; height: 100%; min-width: 550px; background-color:#eeeeee">
+        @if (album != null)
+        {
+            <AlbumInfo @ref=albumInfo Album=@album Track=@track OnTrackSelected=AlbumTrack_TrackSelected></AlbumInfo>
+        }
+    </MudPaper>
+
+    <!-- Right: HttpLog -->
+    <MudPaper Style="@(ShowLog ? "flex: 0 0 400px; max-width:400px; background-color:#eeeeee; " : "display:none;")">
+        <HttpLog @ref=httpLog></HttpLog>
+    </MudPaper>
+
+</MudStack>
+
+@code {
+    AlbumList? albumList;
+    AlbumInfo? albumInfo;
+    Album? album;
+    Track? track;
+    string? artist;
+    bool isBusy;
+
+    HttpLog? httpLog;
+
+    [Parameter]
+    public bool ShowLog { get; set; }
+
+    [Parameter]
+    public EventCallback<Album> OnAlbumClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnStatusBarMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        WebService.LogMessage += WebService_LogMessage;
+        WebService.LogException += WebService_LogException;
+    }
+
+    string StackStyle => isBusy ? "width: 100%; cursor: wait;" : "width: 100%; cursor: default;";
+
+    void WebService_LogException(Exception ex, string message)
+    {
+        httpLog?.AddItem(message, Color.Error);
+    }
+
+    void WebService_LogMessage(string message)
+    {
+        httpLog?.AddItem(message, Color.Default);
+    }
+
+    public void ClearAlbums()
+    {
+        albumList?.ClearList();
+        album = null;  // to hide any prior results
+    }
+
+    async void FireStatusBarMessage(string message)
+    {
+        await OnStatusBarMessage.InvokeAsync(message);
+    }
+
+    async void HttpLog_Clicked(bool doShow)
+    {
+        ShowLog = doShow;
+    }
+
+    public async void FindArtistAlbums(string theArtist)
+    {
+        isBusy = true;
+        ClearAlbums();
+        StateHasChanged();
+
+        artist = theArtist;
+
+        FireStatusBarMessage($"Searching for {artist}...");
+
+        string? artistId = await musicBrainz.FindArtistId(artist);
+        if (artistId == null)
+        {
+            isBusy = false;
+            FireStatusBarMessage("Artist not found. Keep in mind that artist names are case-sensitive.");
+            return;
+        }
+
+        FireStatusBarMessage("Retrieving albums...");
+        List<Album>? albums = await musicBrainz.FindAlbums(artistId, artist);
+
+        var sortedAlbums = albums?
+                        .OrderBy(p => p.Date)
+                        .ThenBy(p => p.Title)
+                        .ToList<Album>();
+
+        albumList?.AddAlbums(sortedAlbums);
+
+        FireStatusBarMessage($"{albums!.Count} albums found");
+
+        isBusy = false;
+        StateHasChanged();
+    }
+
+    async public void AlbumClicked(Album theAlbum)
+    {
+        album = theAlbum;
+        if (album == null) return;
+
+        isBusy = true;
+
+        track = null;
+
+        FireStatusBarMessage("Retrieving cover art...");
+        album.CoverArtUri = await coverArtArchive.GetAlbumCoverArtUriAsync(album.GroupId!);
+        StateHasChanged();
+
+        FireStatusBarMessage("Retrieving album info...");
+        await musicBrainz.GetDetailedAlbumInfo(album);
+        FireStatusBarMessage(string.Empty);
+
+        isBusy = false;
+
+        StateHasChanged();
+    }
+
+    async void AlbumTrack_TrackSelected(Track trackSelected)
+    {
+        track = trackSelected;
+
+        isBusy = true;
+        FireStatusBarMessage("Retrieving lyrics ...");
+
+        track.Lyrics = await lrcLib.GetLyricsForSong(track.Artist, track.Title);
+
+        FireStatusBarMessage("");
+        isBusy = false;
+        StateHasChanged();
+    }
+}

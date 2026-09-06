@@ -1,0 +1,12 @@
+﻿<!-- A blue bar with white text-->
+<MudPaper Class="d-flex align-center" Style="flex: 0 0 auto; ">
+    <MudText Typo="Typo.h6" Class="pa-1" Style="flex: 0 0 auto; width: 100%; color: white; background-color:blue">
+        @Text
+    </MudText>
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public string Text { get; set; } = "<unnamed section>";
+}

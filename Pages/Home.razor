@@ -1,0 +1,79 @@
+@page "/"
+@inject PersistentData persistentData
+
+
+<PageTitle>MusicExplorerWasm</PageTitle>
+
+<MudStack Class="d-flex flex-column" Style="height: 100vh;" Spacing="0">
+
+    <MudPaper Elevation="0" Style="flex: 0 0 auto;">
+        <MainHeader Artist="@artist" OnSearchClicked="SearchButton_Clicked" OnHttpLogClicked="ShowLog_Clicked"></MainHeader>
+    </MudPaper>
+
+    <MudPaper Class="d-flex" Elevation="0" Style="flex: 1 1 auto; overflow: auto; background-color:#eeeeee">
+        <MainContent @ref=mainContent OnStatusBarMessage=ShowStatusMessage ShowLog="showLog"></MainContent>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Style="flex: 0 0 auto; background-color:#eeeeee">
+        <MainStatusBar Text=@statusBarText ProgressValue="@progressValue"></MainStatusBar>
+    </MudPaper>
+
+</MudStack>
+
+@code {
+    MainContent? mainContent;
+
+    string artist = "";
+    string statusBarText = "";
+    bool showLog;
+    int progressValue;
+
+    string StatusMessage
+    {
+        set { statusBarText = value; StateHasChanged(); }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        WebService.ProgressChanged += WebService_ProgressChanged;
+    }
+
+    async void WebService_ProgressChanged(int value, int total)
+    {
+        progressValue = (value * 100) / total;
+        StateHasChanged();
+
+        if (value >= total)
+        {
+            await Task.Delay(500);  // give enough time for user to see completion
+            progressValue = 0;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        artist = await persistentData.GetItemAsync<string>(PersistentData.ArtistKey) ?? "";
+        StateHasChanged();
+    }
+
+    async void SearchButton_Clicked(string theArtist)
+    {
+        artist = theArtist;
+        await persistentData.SetItemAsync(PersistentData.ArtistKey, artist);
+        mainContent!.FindArtistAlbums(artist);
+    }
+
+    void ShowStatusMessage(string message)
+    {
+        StatusMessage = message;
+    }
+
+    void ShowLog_Clicked(bool value)
+    {
+        showLog = value;
+    }
+}

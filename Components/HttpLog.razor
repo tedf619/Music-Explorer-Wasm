@@ -1,0 +1,60 @@
+﻿<div style="display: flex; flex-direction: column; height: 100%;">
+
+    <!-- blue header bar -->
+    <MudPaper Class="d-flex" Style="flex-shrink: 0; color: white; background-color:blue">
+        <MudText Typo="Typo.h6" Color="Color.Inherit" Class="flex-grow-1 pa-1">HTTP Log</MudText>
+        <MudText Style="text-decoration: underline; cursor: pointer;" Class="pa-2" @onclick="ClearLog_Clicked">
+            Clear Log
+        </MudText>
+    </MudPaper>
+
+    <!-- scrollable list -->
+    <MudPaper Style="flex: 1; overflow-y: auto; border: 1px solid gray; height: 100%; background-color:white" Elevation="2">
+        <MudList T="string" Dense="true">
+            @foreach (var item in _items)
+            {
+                <MudListItem T="ColoredItem">
+                    @if (item.Color == Color.Error)
+                    {
+                        <MudText Style="color: red; font-size: 0.8rem;">@item.Text</MudText> // fixes bug where MudText.Color is overridden by parent color
+                    }
+                    else
+                    {
+                        <MudText Color=@item.Color Style="font-size: 0.8rem;">@item.Text</MudText>
+                    }
+                </MudListItem>
+            }
+        </MudList>
+    </MudPaper>
+
+</div>
+
+@code {
+    List<ColoredItem> _items = new();
+
+    public void AddItem(string text, Color color)
+    {
+        if (color == Color.Error)
+            Console.WriteLine("red");
+
+        if (text == string.Empty)
+            _items.Add(new ColoredItem(string.Empty, color));
+        else
+            _items.Add(new ColoredItem($"{DateTime.Now.ToString("HH:mm:ss.fff")} {text}", color));
+        StateHasChanged();
+    }
+
+    public void Clear()
+    {
+        _items.Clear();
+        StateHasChanged();
+    }
+
+    void ClearLog_Clicked()
+    {
+        Clear();
+    }
+
+    record ColoredItem(string Text, Color Color);
+
+}

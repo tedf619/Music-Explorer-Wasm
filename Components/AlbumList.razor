@@ -1,0 +1,55 @@
+﻿<div style="display: flex; flex-direction: column; height: 100%; min-height: 0;">
+    <SectionHeader Text="Albums"></SectionHeader>
+
+    <div class="d-flex" style="height:30px">
+        <MudText Style="flex: 0 0 auto; width: 55px; padding:4px; background-color:white; box-shadow: inset 1px 1px 0 0 grey, inset -1px -1px 0 0 rgba(0,0,0,0.4);">Year</MudText>
+        <MudText Class="flex-grow-1" Style="padding:4px; background-color:white; box-shadow: inset 1px 1px 0 0 grey, inset -1px -1px 0 0 rgba(0,0,0,0.4);">Title</MudText>
+    </div>
+
+    <MudPaper Style="overflow-y: auto; border: 1px solid grey; height: 100%;">
+        <MudTable Items="@items"
+                  Dense="true"
+                  Hover="true"
+                  T="Album"
+                  RowClass="cursor-pointer"
+                  SelectedItem="selectedAlbum"
+                  SelectedItemChanged="OnSelectedItemChanged"
+                  RowStyleFunc="@RowStyleFunc">
+            <RowTemplate>
+                <MudTd Style="padding: 1px 4px" DataLabel="Year">@context.Date.Year</MudTd>
+                <MudTd Style="padding: 1px 14px" DataLabel="Title">@context.Title</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</div>
+
+@code {
+    List<Album> items = new();
+    Album? selectedAlbum;
+
+    [Parameter]
+    public EventCallback<Album> OnAlbumClicked { get; set; }
+
+    async void OnSelectedItemChanged(Album album)
+    {
+        selectedAlbum = album;
+        await OnAlbumClicked.InvokeAsync(selectedAlbum);
+    }
+
+    public void AddAlbums(List<Album>? albums)
+    {
+        items.AddRange(albums!);
+        StateHasChanged();
+    }
+
+    public void ClearList()
+    {
+        items.Clear();
+        StateHasChanged();
+    }
+
+    string RowStyleFunc(Album album, int index)
+    {
+        return album == selectedAlbum ? "background-color: lightgrey; color: black;" : string.Empty;
+    }
+}
